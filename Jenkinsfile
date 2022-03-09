@@ -3,8 +3,8 @@
     stages {
         stage('gitclone') {
             steps { 
-                sh'''npm i'''
-                sh'''npm run build'''
+                sh''apt install httpd'''
+                sh'''run index.html'''
             }
         }
       }
