@@ -4,7 +4,7 @@
         stage('gitclone') {
             steps { 
                 sh'''npm i'''
-                sh'''npm run build'''
+                sh'''npm start index.js'''
             }
         }
     }
