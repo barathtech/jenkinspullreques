@@ -2,7 +2,6 @@
     agent any
     stages {
      stage('build') {
-        sh'''apt install nodejs'''
         sh'''apt install npm'''
         sh'''npm i -g pm2'''
         }
