@@ -1,0 +1,60 @@
+name: S3 Deploy - QA
+on:
+ push:
+  tags:
+    - qa*
+
+jobs:
+ build:
+   runs-on: ubuntu-latest
+   steps:
+     - name: Checkout source code
+       uses: actions/checkout@v2
+       
+     - name: Cache node modules
+       uses: actions/cache@v1
+       with:
+         path: node_modules
+         key: ${{ runner.OS }}-build-${{ hashFiles('package.json') }}
+         restore-keys: |
+           ${{ runner.OS }}-build-
+           ${{ runner.OS }}-
+       
+     - name: Install Angular
+       run: sudo npm install -g @angular/cli@11.1.4
+       
+     - name: Install Node Modules
+       run: npm install --legacy-peer-deps
+
+     - name: Build
+       run: ng build --configuration=qa
+
+     - name: Empty Bucket
+       env:
+         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+       run: aws s3 rm s3://on-ax-qa-10.fintuple.in/ --recursive --region us-east-1
+
+     - name: Deploy Into Bucket
+       env:
+         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+       run: aws s3 cp dist s3://on-ax-qa-10.fintuple.in/ --recursive --region us-east-1
+
+    
+     - name: Invalidate Cloudfront
+       uses: chetan/invalidate-cloudfront-action@master
+       env:
+         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         DISTRIBUTION: ${{ secrets.QA_INTERNAL_CLOUD_FRONT_ID }}
+         PATHS: '/*'
+         AWS_REGION: "ap-south-1"
+         
+     - name: Invalidate Cloudfront
+       uses: chetan/invalidate-cloudfront-action@master
+       env:
+         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         DISTRIBUTION: ${{ secrets.QA_CLOUD_FRONT_ID }}
+         PATHS: '/*'
