@@ -31,7 +31,7 @@ pipeline {
                     sh 'go vet .'
                     echo 'Running linting'
                     sh 'golint .'
-                    echo 'Running test'
+                    echo 'Running Demo'
                     sh 'cd test && go test -v'
                 }
             }
